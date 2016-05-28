@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/views/layout">
+    <excludes>
+        <pattern>/static/**</pattern>
+        <pattern>/ajax/**</pattern>
+        <pattern>/api/**</pattern>
+    </excludes>
+
+    <decorator name="page" page="/decorators/public.jsp">
+        <url-pattern>/**</url-pattern>
+    </decorator>
+    <decorator name="admin" page="/decorators/admin.jsp">
+        <url-pattern>/admin/**</url-pattern>
+    </decorator>
+</decorators>

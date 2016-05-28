@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.0.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+    <mvc:annotation-driven/>
+    <aop:aspectj-autoproxy/>
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.bestfood"/>
+
+    <context:property-placeholder properties-ref="properties"/>
+
+
+    <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
+
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="${upload.max-file-size}"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+
+
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
+    <bean id="conversion-service" class="org.springframework.format.support.FormattingConversionServiceFactoryBean"/>
+
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+        <property name="contentType">
+            <value>text/html;charset=UTF-8</value>
+        </property>
+        <property name="order" value="1"/>
+
+        <property name="attributesMap">
+            <map>
+                <entry key="properties" value-ref="properties"/>
+                <entry key="cacheToken" value="#{new java.util.Date().getTime()}"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+    <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+
+
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.FixedLocaleResolver">
+        <property name="defaultLocale" value="${application.locale}"/>
+    </bean>
+
+    <bean id="bootstrap" class="com.bestfood.ApplicationBootstrap"/>
+
+</beans>

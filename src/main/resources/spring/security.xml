@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+        xmlns="http://www.springframework.org/schema/security"
+        xmlns:beans="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+    http://www.springframework.org/schema/security
+    http://www.springframework.org/schema/security/spring-security-4.0.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+    <!-- 
+        Allow method level security annotations
+     -->
+    <global-method-security
+            secured-annotations="enabled"
+            pre-post-annotations="enabled" jsr250-annotations="enabled"/>
+
+    <http pattern="/payment/**" security="none"/>
+
+    <http use-expressions="true">
+        <headers disabled="true"/>
+        <csrf disabled="true"/>
+        <intercept-url pattern="/*" access="permitAll" />
+        <intercept-url pattern="/static/**" access="permitAll" />
+        <intercept-url pattern="/login" access="permitAll" />
+        <intercept-url pattern="/login*" access="permitAll" />
+
+        <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
+        <intercept-url pattern="/user/**" access="hasRole('ROLE_USER')"/>
+
+        <form-login login-page="/login"
+                    username-parameter="j_username"
+                    password-parameter="j_password"
+                    login-processing-url="/j_spring_security_check"
+                    authentication-failure-url="/login?login_error=1"
+                    authentication-success-handler-ref="authSuccessHandler"/>
+
+        <remember-me key="_spring_security_remember_me" data-source-ref="dataSource" user-service-ref="userService"/>
+
+        <logout logout-url="/j_spring_security_logout"
+                logout-success-url="/"
+                invalidate-session="true"
+                delete-cookies="true"/>
+
+        <session-management session-fixation-protection="newSession">
+            <concurrency-control max-sessions="5" error-if-maximum-exceeded="false"/>
+        </session-management>
+    </http>
+
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider user-service-ref="userService">
+            <password-encoder ref="passwordEncoder"/>
+        </authentication-provider>
+    </authentication-manager>
+
+    <!-- Override RememberMeProcessingFilter. -->
+    <beans:bean id="rememberMeProcessingFilter" class="org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter">
+        <beans:constructor-arg name="authenticationManager" ref="authenticationManager"/>
+        <beans:constructor-arg name="rememberMeServices" ref="rememberMeServices"/>
+    </beans:bean>
+
+    <!-- Defines which remember me implementation to use - in this case using a database table to log 'remembered'
+        tokens. -->
+    <beans:bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
+        <beans:constructor-arg name="tokenRepository" ref="jdbcTokenRepository" />
+        <beans:constructor-arg name="userDetailsService" ref="userService" />
+        <beans:constructor-arg name="key" value="_spring_security_remember_me" />
+        <beans:property name="alwaysRemember" value="false" />
+    </beans:bean>
+
+    <!-- Uses a database table to maintain a set of persistent login data, -->
+    <beans:bean id="jdbcTokenRepository"
+                class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+        <beans:property name="createTableOnStartup" value="false"/>
+        <beans:property name="dataSource" ref="dataSource"/>
+    </beans:bean>
+
+    <beans:bean id="authSuccessHandler"
+                class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
+        <beans:property name="targetUrlParameter" value="spring-security-redirect"/>
+        <beans:property name="defaultTargetUrl" value="/login?form=1"/>
+        <beans:property name="alwaysUseDefaultTargetUrl" value="false"/>
+    </beans:bean>
+</beans:beans>
